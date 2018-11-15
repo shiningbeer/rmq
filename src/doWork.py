@@ -11,7 +11,8 @@ print(' [*] Waiting for messages. To exit press CTRL+C')
 
 def callback(ch, method, properties, body):
     dd=json.loads(body)
-    print body ,dd
+    sleep(3)
+    print dd
     # print(" [x] Received %r" % dd)
     time.sleep(body.count(b'.'))
     print(" [x] Done")
