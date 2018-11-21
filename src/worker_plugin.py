@@ -4,7 +4,14 @@ from util.logger import logger
 from util.receiver import Receiver
 import json
 from time import sleep
-send=Sender('localhost','plugin_result_queue')
+import ConfigParser
+config=ConfigParser.ConfigParser()
+config.read('config.ini')
+host=config.get('rmq','host')
+receive_channel=config.get('rmq','plugin_task_channel')
+result_channel=config.get('rmq','plugin_result_channel')
+
+send=Sender(host,result_channel)
 
 def getScanFunc(plugin):
 
@@ -37,11 +44,11 @@ def deal_with_msg(body):
         send.send_msg(trstr)
         return
 
-    logger.info(" Received %r" % task['_id'])
+    logger.info("Received %r" % task['_id'])
     result=scan(ip,port)
     tr={'_id':task["_id"],'result':result}
     trstr=json.dumps(tr)
     send.send_msg(trstr)
 
-receive=Receiver('localhost','plugin_queue',deal_with_msg)
+receive=Receiver(host,receive_channel,deal_with_msg)
 receive.start_listen()
