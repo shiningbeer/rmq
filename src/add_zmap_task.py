@@ -35,11 +35,12 @@ for line in f:
         sys.exit(0)
 # everything is ok
 f.seek(0)
+line_number=0
 for line in f:
-
+    line_number+=1
     doc={'ip':line.strip(),'port':port}
     x=dao.insert_one(name,doc)
-new_task={'name':name,'port':port,'complete':False,'pause':False}
+new_task={'name':name,'port':port,'complete':False,'pause':False,'allSent':False,'count':line_number,'progress':0}
 dao.insert_one('taskInfo',new_task)
 print u'add task successful!'
 f.close()

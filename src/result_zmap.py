@@ -45,6 +45,7 @@ def deal_with_msg(body):
         logger.error('%s, original message: %s' %(repr(e),body))
         return
     dao.update_one(name,{'_id':oid},msg)
+    print u'received and stored a result item of task: %s' % name
 try:
     receive=Receiver(host,channel,deal_with_msg)
     receive.start_listen()

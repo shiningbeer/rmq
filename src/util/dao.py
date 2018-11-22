@@ -25,6 +25,12 @@ class Dao(object):
     def find_one(self,col,find_dict):
         coll=self.db[col]
         return coll.find_one(find_dict)
+    def find_many(self,col,find_dict):
+        coll=self.db[col]
+        return coll.find(find_dict)
+    def find_count(self,col,find_dict):
+        coll=self.db[col]
+        return coll.find(find_dict).count()
 
     def insert_one(self,tableName,document):
         coll=self.db[tableName]

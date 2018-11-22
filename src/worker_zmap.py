@@ -18,19 +18,14 @@ except Exception,e:
     print u'reading config.ini error!',repr(e)
     sys.exit(0)
 
-# connect to server until successful
-while True:
-    try:
-        send=Sender(host,result_channel)
-    except Exception,e:
-        print u'cannot connect rmq server!',repr(e)
-        sleep(3)
-        continue
-    break
-def send_result(result):
+def send_result(name,id,msg):
+    tr={'name':name,'_id':id,'msg':msg}
+    trstr=json.dumps(tr)
     while True:
         try:
-            send.send_msg(result)
+            send=Sender(host,result_channel)
+            send.send_msg(trstr)
+            send.close()
         except Exception,e:
             print u'cannot connect rmq server!',repr(e)
             sleep(3)
@@ -47,25 +42,23 @@ def deal_with_msg(body):
     except Exception, e:
         logger.error(repr(e))
         msg={'error':repr(e),'originalMsg':body}
-        tr={'name':None,'_id':None,'msg':msg}
-        trstr=json.dumps(tr)
-        send_result(trstr)
+        send_result(None,None,msg)
         return
-    logger.info("Received %r" % id)
+    print ("Received %r" % id)
     try:
-        print os.system('dir')
+        x=os.system('zmap -p '+port+' -B 5M '+ip+' -o ./'+id)
     except Exception,e:
         logger.error(repr(e))
+
         msg={'error':repr(e)}
-        tr={'name':name,'_id':id,'msg':msg}
-        trstr=json.dumps(tr)
-        send_result(trstr)
+        send_result(name,id,msg)
         return
-    print 'lalalalllllllllllll'
+    if x!=0:
+        msg={'error':'run zmap failed!'}
+        send_result(name,id,msg)
+        return
     msg={'result':111}
-    tr={'name':name,'_id':id,'msg':msg}
-    trstr=json.dumps(tr)
-    send_result(trstr)
+    send_result(name,id,msg)
 
 
     # result=[]

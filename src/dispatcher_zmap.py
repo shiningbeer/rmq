@@ -25,6 +25,7 @@ try:
 except Exception,e:
     print u'cannot connect database!',repr(e)
     sys.exit(0)
+
 try:
     send=Sender(host,channel)
 except Exception,e:
@@ -32,9 +33,10 @@ except Exception,e:
     sys.exit(0)
 msg_count=send.get_msg_count()
 if msg_count>max_queue_length:
-    print u'messages in the queue: %s > %s. waiting...' % (msg_count,max_queue_length)
+    print u'queue length: %s > %s. waiting...' % (msg_count, max_queue_length)
     sys.exit(0)
-task=dao.find_one(task_info,{'complete':False,'pause':False})
+print 'queue length: %d ' % msg_count
+task=dao.find_one(task_info,{'allSent':False,'pause':False})
 if task is None:
     print u'no task now!'
     sys.exit(0)
@@ -48,8 +50,8 @@ if not dao.collection_exits(col_name):
 for i in range(send_batch_count):
     doc=dao.find_one(col_name,{'sent':None})
     if doc is None:
-        # means the task is completed
-        dao.update_many(task_info,{'_id':task_id},{'complete':True})
+        # means the ip of task is all sent
+        dao.update_many(task_info,{'_id':task_id},{'allSent':True})
         sys.exit(0)
     doc['name']=col_name
     doc_id=doc['_id']
@@ -61,16 +63,5 @@ for i in range(send_batch_count):
         print repr(e)
         continue
     dao.update_one(col_name,{'_id':doc_id},{'sent':True})
-        
-
-
-    
-
-# task={'_id':12345,'type':'plugin','ip':'173.181.212.179','port':502,'plugin':'modbus'}
-# print task
-# for i in range(2):
-#     task['_id']=i
-#     msg=json.dumps(task)
-#     logger.info(" Sent %r" % msg)
-#     send.send_msg(msg)
+print 'task--%s : sent another %d' % (col_name,send_batch_count)
 send.close()
