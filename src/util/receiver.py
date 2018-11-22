@@ -2,8 +2,9 @@
 import pika
 
 class Receiver:
-    def __init__(self, ip,queue,credentials,callback):
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=ip,credentials=credentials))
+    def __init__(self, host,user,pw,queue,callback):
+        credentials = pika.PlainCredentials(user, pw)
+        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=host,credentials=credentials))
         self.channel = self.connection.channel()
         self.channel.queue_declare(queue, durable=True)
         self.queue=queue
@@ -24,7 +25,6 @@ if __name__ == "__main__":
     def xxx(body):
         print(" [x] Received %r" % body)
         print(" [x] Done")
-    credentials = pika.PlainCredentials('worker', 'hello')
-    receiver=Receiver('154.223.179.149','task_queue',credentials,xxx)
+    receiver=Receiver('154.223.179.149','worker','hello','task_queue',xxx)
     receiver.start_listen()
     

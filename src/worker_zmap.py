@@ -4,6 +4,7 @@ from util.logger import logger
 from util.receiver import Receiver
 import json
 import os
+from threading import Thread
 from time import sleep
 import sys
 import ConfigParser
@@ -12,6 +13,8 @@ config=ConfigParser.ConfigParser()
 try:
     config.read('config.ini')
     host=config.get('rmq','host')
+    user=config.get('rmq','user')
+    password=config.get('rmq','password')
     receive_channel=config.get('rmq','zmap_task_channel')
     result_channel=config.get('rmq','zmap_result_channel')
 except Exception,e:
@@ -23,7 +26,7 @@ def send_result(name,id,msg):
     trstr=json.dumps(tr)
     while True:
         try:
-            send=Sender(host,result_channel)
+            send=Sender(host,user,password,result_channel)
             send.send_msg(trstr)
             send.close()
         except Exception,e:
@@ -57,17 +60,14 @@ def deal_with_msg(body):
         msg={'error':'run zmap failed!'}
         send_result(name,id,msg)
         return
-    msg={'result':111}
+
+    result=[]
+    for line in open('./'+id, 'r'):
+        line = line.strip()
+        result.append(line)
+    msg={'result':result}
     send_result(name,id,msg)
 
-
-    # result=[]
-    # for line in open('./'+id, 'r'):
-    #     line = line.strip()
-    #     result.append(line)
-    # tr={'_id':task["_id"],'result':result}
-    # trstr=json.dumps(tr)
-    # send.send_msg(trstr)
-
-receive=Receiver(host,receive_channel,deal_with_msg)
-receive.start_listen()
+for i in range (3):
+    receive=Receiver(host,user,password,receive_channel,deal_with_msg)
+    t=Thread(target=receive.start_listen).start()

@@ -2,8 +2,9 @@
 import pika
 from logger import logger
 class Sender:
-    def __init__(self, ip,queue,credentials):
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=ip,credentials=credentials))
+    def __init__(self, host,user,pw,queue):
+        credentials = pika.PlainCredentials(user, pw)
+        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=host,credentials=credentials))
         self.channel = self.connection.channel()
         self.queue=self.channel.queue_declare(queue, durable=True)
         self.queue_name=queue
@@ -20,8 +21,7 @@ class Sender:
         return self.queue.method.message_count
 
 if __name__ == "__main__":
-    credentials = pika.PlainCredentials('worker', 'hello')
-    send=Sender('154.223.179.149','task_queue',credentials)
+    send=Sender('154.223.179.149','worker','hello','task_queue')
     for i in range(2):
         send.send_msg(str(i))
     send.close()

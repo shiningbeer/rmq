@@ -14,6 +14,8 @@ config=ConfigParser.ConfigParser()
 try:
     config.read('config.ini')
     host=config.get('rmq','host')
+    user=config.get('rmq','user')
+    password=config.get('rmq','password')
     channel=config.get('rmq','zmap_result_channel')
     zmap_task_db=config.get('mongo','zmap_task_db_name')
 except Exception,e:
@@ -47,7 +49,7 @@ def deal_with_msg(body):
     dao.update_one(name,{'_id':oid},msg)
     print u'received and stored a result item of task: %s' % name
 try:
-    receive=Receiver(host,channel,deal_with_msg)
+    receive=Receiver(host,user,password,channel,deal_with_msg)
     receive.start_listen()
 except Exception,e:
     print u'cannot connect rmq server!',repr(e)

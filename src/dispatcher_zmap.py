@@ -12,6 +12,8 @@ config=ConfigParser.ConfigParser()
 try:
     config.read('config.ini')
     host=config.get('rmq','host')
+    user=config.get('rmq','user')
+    password=config.get('rmq','password')
     channel=config.get('rmq','zmap_task_channel')
     max_queue_length=int(config.get('rmq','zmap_max_queue_length'))
     send_batch_count=int(config.get('rmq','zmap_send_batch_count'))
@@ -27,7 +29,7 @@ except Exception,e:
     sys.exit(0)
 
 try:
-    send=Sender(host,channel)
+    send=Sender(host,user,password,channel)
 except Exception,e:
     print u'cannot connect rmq server!',repr(e)
     sys.exit(0)
