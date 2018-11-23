@@ -9,7 +9,11 @@ from time import sleep
 import sys
 import ConfigParser
 config=ConfigParser.ConfigParser()
-
+try:
+    run_count=int(sys.argv[1])
+except Exception,e:
+    print u'sys args wrong!',repr(e)
+    sys.exit(0)
 try:
     config.read('config.ini')
     host=config.get('rmq','host')
@@ -68,6 +72,6 @@ def deal_with_msg(body):
     msg={'result':result}
     send_result(name,id,msg)
 
-for i in range (3):
+for i in range (run_count):
     receive=Receiver(host,user,password,receive_channel,deal_with_msg)
     t=Thread(target=receive.start_listen).start()
