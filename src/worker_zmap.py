@@ -52,8 +52,9 @@ def deal_with_msg(body):
         send_result(None,None,msg)
         return
     print ("Received %r" % id)
+    temp_file=name+'-'+id
     try:
-        x=os.system('zmap -p '+port+' -B 5M '+ip+' -o ./'+id)
+        x=os.system('zmap -p '+port+' -B 5M '+ip+' -o ./'+temp_file)
     except Exception,e:
         logger.error(repr(e))
 
@@ -66,11 +67,13 @@ def deal_with_msg(body):
         return
 
     result=[]
-    for line in open('./'+id, 'r'):
+    for line in open('./'+temp_file, 'r'):
         line = line.strip()
         result.append(line)
     msg={'result':result}
     send_result(name,id,msg)
+    os.remove(temp_file)
+# to do: if temp_file still exist, it means that the result has not been sent, deal with that
 
 for i in range (run_count):
     receive=Receiver(host,user,password,receive_channel,deal_with_msg)
